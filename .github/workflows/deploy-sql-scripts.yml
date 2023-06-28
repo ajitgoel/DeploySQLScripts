@@ -1,0 +1,38 @@
+name: Deploy SQL Scripts
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up PostgreSQL
+        uses: docker://postgres:latest
+        env:
+          POSTGRES_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+
+      - name: Install jq
+        run: |
+          apt-get update
+          apt-get -y install jq
+
+      - name: Read script names from XML
+        id: read-scripts
+        run: |
+          SCRIPTS=$(cat scripts.xml | jq -r '.scripts.script[]')
+          echo "::set-output name=scripts::$SCRIPTS"
+
+      - name: Execute SQL Scripts
+        run: |
+          IFS=$'\n'
+          for script in ${{ steps.read-scripts.outputs.scripts }}
+          do
+            psql "$POSTGRES_CONNECTION_STRING" -f "$script"
+          done
