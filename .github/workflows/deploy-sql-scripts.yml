@@ -1,38 +1,40 @@
 name: Deploy SQL Scripts
-
 on:
   push:
     branches:
       - main
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
       - name: Set up PostgreSQL
-        uses: docker://postgres:latest
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install postgresql-client
         env:
           POSTGRES_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
-
       - name: Install jq
         run: |
-          apt-get update
-          apt-get -y install jq
-
+          sudo apt-get -y install jq
       - name: Read script names from XML
         id: read-scripts
         run: |
           SCRIPTS=$(cat scripts.xml | jq -r '.scripts.script[]')
           echo "::set-output name=scripts::$SCRIPTS"
-
       - name: Execute SQL Scripts
         run: |
           IFS=$'\n'
           for script in ${{ steps.read-scripts.outputs.scripts }}
           do
-            psql "$POSTGRES_CONNECTION_STRING" -f "$script"
+            script_name=$(echo "$script" | jq -r '.name')
+            stop_on_error=$(echo "$script" | jq -r '.StopOnError')
+            echo "Executing script: $script_name"
+            psql "$POSTGRES_CONNECTION_STRING" -f "$script_name"
+            exit_code=$?
+            if [ $exit_code -ne 0 ] && [ "$stop_on_error" = "true" ]; then
+              echo "Error occurred while executing $script_name. Exiting..."
+              exit $exit_code
+            fi
           done
