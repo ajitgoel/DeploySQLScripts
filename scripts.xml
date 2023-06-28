@@ -1,5 +1,14 @@
 <scripts>
-  <script>script1.sql</script>
-  <script>script2.sql</script>
-  <script>script3.sql</script>
+  <script>
+    <name>script1.sql</name>
+    <StopOnError>true</StopOnError>
+  </script>
+  <script>
+    <name>script2.sql</name>
+    <StopOnError>false</StopOnError>
+  </script>
+  <script>
+    <name>script3.sql</name>
+    <StopOnError>true</StopOnError>
+  </script>
 </scripts>
