@@ -15,6 +15,9 @@ jobs:
           sudo apt-get -y install postgresql-client
         env:
           POSTGRES_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+      - name: Install jq
+        run: |
+          sudo apt-get -y install jq
       - name: Read script names from JSON
         id: read-scripts
         run: |
