@@ -1,0 +1,16 @@
+{
+  "scripts": [
+    {
+      "name": "script1.sql",
+      "StopOnError": true
+    },
+    {
+      "name": "script2.sql",
+      "StopOnError": false
+    },
+    {
+      "name": "script3.sql",
+      "StopOnError": true
+    }
+  ]
+}
